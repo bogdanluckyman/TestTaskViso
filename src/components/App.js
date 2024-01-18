@@ -8,6 +8,7 @@ export const App = () => {
   const [markers, setMarkers] = useState(
     JSON.parse(localStorage.getItem('markers')) || []
   );
+  const [markerCount, setMarkerCount] = useState(0);
 
   useEffect(() => {
     const map = new mapboxgl.Map({
@@ -21,13 +22,16 @@ export const App = () => {
     map.on('click', evt => {
       const { lng, lat } = evt.lngLat;
       const newMarker = new mapboxgl.Marker({
-        offset: [754, 313],
+        offset: [760, 275],
         draggable: true,
       }).setLngLat([lng, lat]);
       newMarker.addTo(map);
       setMarkers(prevMarkers => [...prevMarkers, newMarker]);
+      setMarkerCount(count => count + 1);
     });
-
+    map.on('dblclick', evt => {
+      evt.preventDefault();
+    });
     return () => {
       map.remove();
     };
@@ -36,20 +40,24 @@ export const App = () => {
   const removeAllMarkers = () => {
     markers.forEach(marker => marker.remove());
     setMarkers([]);
+    setMarkerCount(0);
   };
+
   const removeLastMarker = () => {
     const lastMarker = markers.pop();
     if (lastMarker) {
       lastMarker.remove();
       setMarkers([...markers]);
+      setMarkerCount(count => Math.max(0, count - 1));
     }
   };
+
   return (
     <>
       <div
         id="mapbox"
         style={{
-          height: '95vh',
+          height: '85vh',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -58,6 +66,7 @@ export const App = () => {
         }}
       ></div>
       <div>
+        <p>Marker Count: {markerCount}</p>
         <button onClick={removeAllMarkers}>Видалити всі маркери</button>
         <button onClick={removeLastMarker}>Видалити останній маркер</button>
       </div>
